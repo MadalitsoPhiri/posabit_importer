@@ -76,7 +76,7 @@ import { Card, DigitalWalletCreateCustomerDto, DigitalWalletCustomerObjectDto, P
 
       return data?.data;
     } catch (error) {
-     console.log('failed to create card',error)
+     console.error('failed to create card',error)
       return null;
     }
   }
@@ -97,7 +97,7 @@ import { Card, DigitalWalletCreateCustomerDto, DigitalWalletCustomerObjectDto, P
 
       return data?.customer as PosabitCustomer;
     } catch (error) {
-console.log('failed to create posabit customer',error)
+console.error('failed to create posabit customer',error)
 
       return null;
     }
@@ -124,7 +124,7 @@ export const updateCustomerNativeLoyalty = async(
 
       return data?.customer;
     } catch (error) {
-    console.log('updateCustomerNativeLoyalty failed',error)
+    console.error('updateCustomerNativeLoyalty failed',error)
     
     }
   }
@@ -133,8 +133,8 @@ export const updateCustomerNativeLoyalty = async(
     if (amountToAdd <= 0) {
       return;
     }
-     console.log('amountToAdd',amountToAdd)
-     console.log('cardId',cardId)
+
+  
     //  https://api.digitalwallet.cards/api/v2/cards/{id}/add-transaction-amount
     const axiosCall = await axios({
       method: 'post',
@@ -148,6 +148,6 @@ export const updateCustomerNativeLoyalty = async(
     });
     const { data }: { data: { data: changePointsInProgramResponseDto } } =
       axiosCall;
-  console.log('data',data)
+
     return data;
   }

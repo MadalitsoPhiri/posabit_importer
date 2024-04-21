@@ -88,8 +88,7 @@ const processCustomer =  async(customerId:  number
         console.log('customerData.points',customerData.points)
         console.log('newPosabitCustomer',newPosabitCustomer)
     
-       const response =  await  addToProgram(newDigitalWalletCard.id,customerData.points)
-       console.log('response',response)
+    await  addToProgram(newDigitalWalletCard.id,customerData.points)
       } };
   }
 
