@@ -11,7 +11,7 @@ let obj = csvToJson.fieldDelimiter(',')
 .formatValueByType(true)
 .parseSubArray("*",',')
 .getJsonFromCsv("./FreshBakedCustomers04-10-2024.csv");
-const customers = obj.filter((customer:any)=>customer.Email.length >= 10).map((customer:any)=>{
+const customers = obj.map((customer:any)=>{
   return {id:customer.id,customer_type:customer.CustomerType,first_name:customer.FirstName,last_name:customer.LastName} as PosabitCustomer
 })
 console.log('customers',customers)
@@ -43,8 +43,11 @@ const processCustomer =  async(customerId:  number
     
         const customerCreationPayload = {
           phone: normalizePhoneNumber(customerData.telephone),
-          firstName: customerData.first_name ?? customerData.last_name,
-          surname: customerData.last_name ?? customerData.first_name,
+          firstName: customerData.first_name ,
+          surname: customerData.last_name ,
+          dateOfBirth:customerData.birthday,
+          gender:customerData.gender,
+          email:customerData.email
         };
     
         const newDigitalWalletCustomer =
@@ -58,7 +61,7 @@ const processCustomer =  async(customerId:  number
             newDigitalWalletCustomer.id,
             process.env.CARD_TEMPLATE_ID,
           );
-          console.log('newDigitalWalletCard',newDigitalWalletCard)
+
     
     
     
@@ -90,4 +93,6 @@ const processCustomer =  async(customerId:  number
        console.log('response',response)
       } };
   }
- processCustomer(1026913).then(customer=>console.log('customer',customer))
+
+
+    processCustomer(1026913).then(customer=>console.log('customer',customer)).catch((e)=>{console.log('error',e)})

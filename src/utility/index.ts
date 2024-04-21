@@ -133,17 +133,17 @@ export const updateCustomerNativeLoyalty = async(
     if (amountToAdd <= 0) {
       return;
     }
-
+     console.log('amountToAdd',amountToAdd)
+     console.log('cardId',cardId)
+    //  https://api.digitalwallet.cards/api/v2/cards/{id}/add-transaction-amount
     const axiosCall = await axios({
       method: 'post',
-      url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/add-${
-        PROGRAM_ENDPOINTS.POINT
-      }`,
+      url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/add-reward`,
       headers: {
         'X-API-Key': process.env.DIGITAL_WALLET_API_KEY,
       },
       data: {
-       points: amountToAdd,
+        rewards: amountToAdd,
       },
     });
     const { data }: { data: { data: changePointsInProgramResponseDto } } =

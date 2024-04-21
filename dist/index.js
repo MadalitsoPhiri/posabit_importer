@@ -52,5 +52,5 @@ const processCustomer = async (customerId) => {
     }
     ;
 };
-processCustomer(1026913).then(customer => console.log('customer', customer));
+processCustomer(1026913).then(customer => console.log('customer', customer)).catch((e) => { console.log('error', e); });
 //# sourceMappingURL=index.js.map
