@@ -30,6 +30,11 @@ combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
+convert-csv-to-json@^2.44.0:
+  version "2.44.0"
+  resolved "https://registry.yarnpkg.com/convert-csv-to-json/-/convert-csv-to-json-2.44.0.tgz#f4b194a699dae95244dcb4a6a4d9d374273af907"
+  integrity sha512-t1ol7CBfyN4VURpUc0hVO6boX/7cCdYz1tLPD2j5aU8sXjk9UQmNy9NtOc4pGOfGhjJEfeiKXF1WvlHTFtRy4A==
+
 delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
