@@ -5,20 +5,18 @@ let obj = csvToJson.fieldDelimiter(',')
     .formatValueByType(true)
     .parseSubArray("*", ',')
     .getJsonFromCsv("./FreshBakedCustomers04-10-2024.csv");
-const customers = obj.filter((customer) => customer.Email.length >= 10).map((customer) => {
+const customers = obj.map((customer) => {
     return { id: customer.id, customer_type: customer.CustomerType, first_name: customer.FirstName, last_name: customer.LastName };
 });
-console.log('customers', customers);
 const processCustomer = async (customerId) => {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d;
     let customerData;
     try {
         customerData = (await getCustomerById(customerId));
     }
     catch (e) {
-        console.log('failed to fetch customer');
+        console.error('failed to fetch customer', e);
     }
-    console.log('customerData', customerData);
     if (customerData.telephone) {
         const cardIdExtractedFromEmail = (_c = (_b = (_a = customerData === null || customerData === void 0 ? void 0 : customerData.email) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '@')) === null || _c === void 0 ? void 0 : _c[0];
         const cardIdRegexPattern = /^\d{6}-\d{3}-\d{3}$/;
@@ -26,12 +24,14 @@ const processCustomer = async (customerId) => {
         if (!isValidCardId) {
             const customerCreationPayload = {
                 phone: normalizePhoneNumber(customerData.telephone),
-                firstName: (_e = customerData.first_name) !== null && _e !== void 0 ? _e : customerData.last_name,
-                surname: (_f = customerData.last_name) !== null && _f !== void 0 ? _f : customerData.first_name,
+                firstName: customerData.first_name,
+                surname: customerData.last_name,
+                dateOfBirth: customerData.birthday,
+                gender: customerData.gender,
+                email: customerData.email
             };
             const newDigitalWalletCustomer = await createDigitalWalletCustomer(customerCreationPayload);
             const newDigitalWalletCard = await createCustomerCard(newDigitalWalletCustomer.id, process.env.CARD_TEMPLATE_ID);
-            console.log('newDigitalWalletCard', newDigitalWalletCard);
             const newPosabitCustomerData = {
                 first_name: customerData.first_name,
                 last_name: customerData.last_name,
@@ -52,5 +52,12 @@ const processCustomer = async (customerId) => {
     }
     ;
 };
-processCustomer(1026913).then(customer => console.log('customer', customer)).catch((e) => { console.log('error', e); });
+for (let i = 0; i < customers.length; i++) {
+    try {
+        await processCustomer(customers[i].id);
+    }
+    catch (e) {
+        console.error('could not process customer');
+    }
+}
 //# sourceMappingURL=index.js.map

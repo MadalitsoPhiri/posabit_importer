@@ -1,7 +1,6 @@
 import 'dotenv/config'
 import { addToProgram, createCustomerCard, createDigitalWalletCustomer, createPosabitCustomer, getCustomerById, normalizePhoneNumber, updateCustomerNativeLoyalty } from "./utility/index.js";
 import { PosabitCustomer, PosabitCustomerProperties } from "./utility/types.js";
-import { readFileSync } from 'fs';
 import csvToJson from "convert-csv-to-json"
 
 
@@ -14,7 +13,7 @@ let obj = csvToJson.fieldDelimiter(',')
 const customers = obj.map((customer:any)=>{
   return {id:customer.id,customer_type:customer.CustomerType,first_name:customer.FirstName,last_name:customer.LastName} as PosabitCustomer
 })
-console.log('customers',customers)
+
 
 
 const processCustomer =  async(customerId:  number
@@ -26,9 +25,9 @@ const processCustomer =  async(customerId:  number
       customerId
     )) as PosabitCustomer;
   }catch(e:any){
- console.log('failed to fetch customer')
+ console.error('failed to fetch customer',e)
   }
-  console.log('customerData',customerData)
+
   if(customerData.telephone){
 
     const cardIdExtractedFromEmail = customerData?.email?.split?.('@')?.[0];
@@ -95,4 +94,11 @@ const processCustomer =  async(customerId:  number
   }
 
 
-    processCustomer(1026913).then(customer=>console.log('customer',customer)).catch((e)=>{console.log('error',e)})
+
+for(let i=0;i < customers.length ;i++){
+  try{
+   await  processCustomer(customers[i].id)
+  }catch(e:any){
+    console.error('could not process customer')
+  }
+} 
