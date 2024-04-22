@@ -1,12 +1,18 @@
 import 'dotenv/config';
-import { addToProgram, createCustomerCard, createDigitalWalletCustomer, createPosabitCustomer, getCustomerById, normalizePhoneNumber, updateCustomerNativeLoyalty } from "./utility/index.js";
+import { addToProgram, createCustomerCard, createDigitalWalletCustomer, createPosabitCustomer, findCardByCustomerId, getCustomerById, normalizePhoneNumber, updateCustomerNativeLoyalty, } from "./utility/index.js";
 import csvToJson from "convert-csv-to-json";
-let obj = csvToJson.fieldDelimiter(',')
+let obj = csvToJson
+    .fieldDelimiter(",")
     .formatValueByType(true)
-    .parseSubArray("*", ',')
+    .parseSubArray("*", ",")
     .getJsonFromCsv("./FreshBakedCustomers04-10-2024.csv");
 const customers = obj.map((customer) => {
-    return { id: customer.id, customer_type: customer.CustomerType, first_name: customer.FirstName, last_name: customer.LastName };
+    return {
+        id: customer.id,
+        customer_type: customer.CustomerType,
+        first_name: customer.FirstName,
+        last_name: customer.LastName,
+    };
 });
 const processCustomer = async (customerId) => {
     var _a, _b, _c, _d;
@@ -15,10 +21,10 @@ const processCustomer = async (customerId) => {
         customerData = (await getCustomerById(customerId));
     }
     catch (e) {
-        console.error('failed to fetch customer', e);
+        console.error("failed to fetch customer", e);
     }
     if (customerData.telephone) {
-        const cardIdExtractedFromEmail = (_c = (_b = (_a = customerData === null || customerData === void 0 ? void 0 : customerData.email) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '@')) === null || _c === void 0 ? void 0 : _c[0];
+        const cardIdExtractedFromEmail = (_c = (_b = (_a = customerData === null || customerData === void 0 ? void 0 : customerData.email) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, "@")) === null || _c === void 0 ? void 0 : _c[0];
         const cardIdRegexPattern = /^\d{6}-\d{3}-\d{3}$/;
         const isValidCardId = (_d = cardIdExtractedFromEmail === null || cardIdExtractedFromEmail === void 0 ? void 0 : cardIdExtractedFromEmail.match) === null || _d === void 0 ? void 0 : _d.call(cardIdExtractedFromEmail, cardIdRegexPattern);
         if (!isValidCardId) {
@@ -28,36 +34,44 @@ const processCustomer = async (customerId) => {
                 surname: customerData.last_name,
                 dateOfBirth: customerData.birthday,
                 gender: customerData.gender,
-                email: customerData.email
+                email: customerData.email,
             };
+            console.log("customerCreationPayload", customerCreationPayload);
             const newDigitalWalletCustomer = await createDigitalWalletCustomer(customerCreationPayload);
-            const newDigitalWalletCard = await createCustomerCard(newDigitalWalletCustomer.id, process.env.CARD_TEMPLATE_ID);
-            const newPosabitCustomerData = {
-                first_name: customerData.first_name,
-                last_name: customerData.last_name,
-                email: `${newDigitalWalletCard.id}@stickycards.co`,
-            };
-            let newPosabitCustomer = (await createPosabitCustomer(newPosabitCustomerData));
-            if (customerData.points && customerData.points !== 0) {
-                const updatedPosabitCustomer = (await updateCustomerNativeLoyalty(newPosabitCustomer.id));
-                if (updatedPosabitCustomer.id) {
-                    newPosabitCustomer = updatedPosabitCustomer;
-                }
+            const DigitalWalletCardFound = await findCardByCustomerId(newDigitalWalletCustomer.id);
+            if (DigitalWalletCardFound) {
+                console.log("DigitalWalletCardFound", JSON.stringify(DigitalWalletCardFound));
+                const result = await addToProgram(DigitalWalletCardFound.id, customerData.points);
+                console.log("result", result);
             }
-            console.log('customerData.points', customerData.points);
-            console.log('newPosabitCustomer', newPosabitCustomer);
-            const response = await addToProgram(newDigitalWalletCard.id, customerData.points);
-            console.log('response', response);
+            else {
+                const newDigitalWalletCard = await createCustomerCard(newDigitalWalletCustomer.id, process.env.CARD_TEMPLATE_ID);
+                const newPosabitCustomerData = {
+                    first_name: customerData.first_name,
+                    last_name: customerData.last_name,
+                    email: `${newDigitalWalletCard.id}@stickycards.co`,
+                };
+                let newPosabitCustomer = (await createPosabitCustomer(newPosabitCustomerData));
+                if (customerData.points && customerData.points !== 0) {
+                    const updatedPosabitCustomer = (await updateCustomerNativeLoyalty(newPosabitCustomer.id));
+                    if (updatedPosabitCustomer.id) {
+                        newPosabitCustomer = updatedPosabitCustomer;
+                    }
+                }
+                console.log("customerData.points", customerData.points);
+                console.log("newPosabitCustomer", newPosabitCustomer);
+                await addToProgram(newDigitalWalletCard.id, customerData.points);
+            }
         }
     }
-    ;
 };
 for (let i = 0; i < customers.length; i++) {
     try {
         await processCustomer(customers[i].id);
+        break;
     }
     catch (e) {
-        console.error('could not process customer');
+        console.error("could not process customer");
     }
 }
 //# sourceMappingURL=index.js.map

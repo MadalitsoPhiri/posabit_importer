@@ -129,25 +129,100 @@ export const updateCustomerNativeLoyalty = async(
     }
   }
 
- export  const addToProgram = async (cardId: string, amountToAdd: number) => {
-    if (amountToAdd <= 0) {
-      return;
-    }
+ export const addToProgram = async (cardId: string, amountToAdd: number) => {
+   if (amountToAdd <= 0) {
+     return;
+   }
 
-  
-    //  https://api.digitalwallet.cards/api/v2/cards/{id}/add-transaction-amount
-    const axiosCall = await axios({
-      method: 'post',
-      url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/add-reward`,
-      headers: {
-        'X-API-Key': process.env.DIGITAL_WALLET_API_KEY,
-      },
-      data: {
-        rewards: amountToAdd,
-      },
-    });
-    const { data }: { data: { data: changePointsInProgramResponseDto } } =
-      axiosCall;
+   //  https://api.digitalwallet.cards/api/v2/cards/{id}/add-transaction-amount
+   const axiosCall = await axios({
+     method: "post",
+     url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/add-scores`,
+     headers: {
+       "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+     },
+     data: {
+       scores: amountToAdd,
+     },
+   });
+   const { data }: { data: { data: changePointsInProgramResponseDto } } =
+     axiosCall;
 
-    return data;
-  }
+   return data;
+ };
+
+ export const subtractFromProgram = async (
+   cardId: string,
+   amountToSubtract: number
+ ) => {
+   if (amountToSubtract <= 0) {
+     return;
+   }
+
+   //  https://api.digitalwallet.cards/api/v2/cards/{id}/add-transaction-amount
+   const axiosCall = await axios({
+     method: "post",
+     url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/subtract-reward`,
+     headers: {
+       "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+     },
+     data: {
+       rewards: amountToSubtract,
+     },
+   });
+   const { data }: { data: { data: changePointsInProgramResponseDto } } =
+     axiosCall;
+
+   return data;
+ };
+
+ export const findCardListByCustomerId = async (
+   customerId: string
+ ): Promise<Card[] | void> => {
+   try {
+     const { data } = await axios({
+       method: "get",
+       url: `${process.env.DIGITAL_WALLET_URL}/cards`,
+       headers: {
+         "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+       },
+       params: { customerId },
+     });
+
+     const cardListFound = data?.data || [];
+
+     return cardListFound;
+   } catch (error) {
+     console.log("error", error);
+     return [];
+   }
+ };
+
+ export const findCardByCustomerId = async (
+   customerId: string
+ ): Promise<Card | void> => {
+   try {
+     if (!customerId) {
+       return;
+     }
+
+     const { data } = await axios({
+       method: "get",
+       url: `${process.env.DIGITAL_WALLET_URL}/cards`,
+       headers: {
+         "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+       },
+       params: { customerId },
+     });
+
+     const cardFound = data?.data?.[0];
+
+     if (!cardFound) {
+       return;
+     }
+
+     return cardFound;
+   } catch (error) {
+     console.log("error", error);
+   }
+ };

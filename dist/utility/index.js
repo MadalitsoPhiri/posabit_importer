@@ -60,7 +60,7 @@ export const createCustomerCard = async (customerId, templateId) => {
         return data === null || data === void 0 ? void 0 : data.data;
     }
     catch (error) {
-        console.log('failed to create card', error);
+        console.error('failed to create card', error);
         return null;
     }
 };
@@ -78,7 +78,7 @@ export const createPosabitCustomer = async (customer) => {
         return data === null || data === void 0 ? void 0 : data.customer;
     }
     catch (error) {
-        console.log('failed to create posabit customer', error);
+        console.error('failed to create posabit customer', error);
         return null;
     }
 };
@@ -100,27 +100,83 @@ export const updateCustomerNativeLoyalty = async (customerId, pointsToUpdate = 0
         return data === null || data === void 0 ? void 0 : data.customer;
     }
     catch (error) {
-        console.log('updateCustomerNativeLoyalty failed', error);
+        console.error('updateCustomerNativeLoyalty failed', error);
     }
 };
 export const addToProgram = async (cardId, amountToAdd) => {
     if (amountToAdd <= 0) {
         return;
     }
-    console.log('amountToAdd', amountToAdd);
-    console.log('cardId', cardId);
     const axiosCall = await axios({
-        method: 'post',
-        url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/add-reward`,
+        method: "post",
+        url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/add-scores`,
         headers: {
-            'X-API-Key': process.env.DIGITAL_WALLET_API_KEY,
+            "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
         },
         data: {
-            rewards: amountToAdd,
+            scores: amountToAdd,
         },
     });
     const { data } = axiosCall;
-    console.log('data', data);
     return data;
+};
+export const subtractFromProgram = async (cardId, amountToSubtract) => {
+    if (amountToSubtract <= 0) {
+        return;
+    }
+    const axiosCall = await axios({
+        method: "post",
+        url: `${process.env.DIGITAL_WALLET_URL}/cards/${cardId}/subtract-reward`,
+        headers: {
+            "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+        },
+        data: {
+            rewards: amountToSubtract,
+        },
+    });
+    const { data } = axiosCall;
+    return data;
+};
+export const findCardListByCustomerId = async (customerId) => {
+    try {
+        const { data } = await axios({
+            method: "get",
+            url: `${process.env.DIGITAL_WALLET_URL}/cards`,
+            headers: {
+                "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+            },
+            params: { customerId },
+        });
+        const cardListFound = (data === null || data === void 0 ? void 0 : data.data) || [];
+        return cardListFound;
+    }
+    catch (error) {
+        console.log("error", error);
+        return [];
+    }
+};
+export const findCardByCustomerId = async (customerId) => {
+    var _a;
+    try {
+        if (!customerId) {
+            return;
+        }
+        const { data } = await axios({
+            method: "get",
+            url: `${process.env.DIGITAL_WALLET_URL}/cards`,
+            headers: {
+                "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
+            },
+            params: { customerId },
+        });
+        const cardFound = (_a = data === null || data === void 0 ? void 0 : data.data) === null || _a === void 0 ? void 0 : _a[0];
+        if (!cardFound) {
+            return;
+        }
+        return cardFound;
+    }
+    catch (error) {
+        console.log("error", error);
+    }
 };
 //# sourceMappingURL=index.js.map

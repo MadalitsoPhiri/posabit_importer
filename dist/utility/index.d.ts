@@ -9,3 +9,8 @@ export declare const updateCustomerNativeLoyalty: (customerId: number, pointsToU
 export declare const addToProgram: (cardId: string, amountToAdd: number) => Promise<{
     data: changePointsInProgramResponseDto;
 }>;
+export declare const subtractFromProgram: (cardId: string, amountToSubtract: number) => Promise<{
+    data: changePointsInProgramResponseDto;
+}>;
+export declare const findCardListByCustomerId: (customerId: string) => Promise<Card[] | void>;
+export declare const findCardByCustomerId: (customerId: string) => Promise<Card | void>;
