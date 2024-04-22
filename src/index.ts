@@ -107,14 +107,13 @@ const processCustomer = async (customerId: number) => {
         await addToProgram(newDigitalWalletCard.id, customerData.points);
       }
     }
-  }
+  } 
 };
 
 for (let i = 0; i < customers.length; i++) {
   if (i === 0) continue;
   try {
     await processCustomer(customers[i].id);
-    break;
   } catch (e: any) {
     console.error("could not process customer");
   }
