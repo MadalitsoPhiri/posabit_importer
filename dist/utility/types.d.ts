@@ -161,6 +161,14 @@ export declare enum PROGRAM_ENDPOINTS {
     STAMPS = "stamp",
     VISIT = "visit"
 }
+export declare enum PROGRAM_TYPES {
+    AMOUNT = "AMOUNT",
+    POINT = "POINT",
+    REWARD = "REWARD",
+    SCORE = "SCORE",
+    STAMPS = "STAMPS",
+    VISIT = "VISIT"
+}
 export declare enum PROGRAM_TYPES_PROPERTY {
     AMOUNT = "amount",
     POINT = "points",

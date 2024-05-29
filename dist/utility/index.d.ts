@@ -14,3 +14,4 @@ export declare const subtractFromProgram: (cardId: string, amountToSubtract: num
 }>;
 export declare const findCardListByCustomerId: (customerId: string) => Promise<Card[] | void>;
 export declare const findCardByCustomerId: (customerId: string) => Promise<Card | void>;
+export declare const handleCustomerLoyaltySync: (customerData: PosabitCustomer) => Promise<void>;

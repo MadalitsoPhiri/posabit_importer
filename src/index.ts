@@ -7,6 +7,7 @@ import {
   findCardByCustomerId,
   findCardListByCustomerId,
   getCustomerById,
+  handleCustomerLoyaltySync,
   normalizePhoneNumber,
   subtractFromProgram,
   updateCustomerNativeLoyalty,
@@ -37,81 +38,12 @@ const processCustomer = async (customerId: number) => {
   }
 
   if (customerData.telephone) {
-    const cardIdExtractedFromEmail = customerData?.email?.split?.("@")?.[0];
-
-    const cardIdRegexPattern = /^\d{6}-\d{3}-\d{3}$/;
-
-    const isValidCardId = cardIdExtractedFromEmail?.match?.(cardIdRegexPattern);
-
-    if (!isValidCardId) {
-      const customerCreationPayload = {
-        phone: normalizePhoneNumber(customerData.telephone),
-        firstName: customerData.first_name,
-        surname: customerData.last_name,
-        dateOfBirth: customerData.birthday,
-        gender: customerData.gender,
-        email: customerData.email,
-      };
-
-      const newDigitalWalletCustomer = await createDigitalWalletCustomer(
-        customerCreationPayload
-      );
-
-      const DigitalWalletCardFound = await findCardByCustomerId(
-        newDigitalWalletCustomer.id
-      );
-      if (DigitalWalletCardFound) {
-        console.log(
-          "DigitalWalletCardFound",
-          JSON.stringify(DigitalWalletCardFound)
-        );
-
-        const result = await subtractFromProgram(
-          DigitalWalletCardFound.id,
-          customerData.points * 6
-        );
-
-        const result2 = await addToProgram(
-          DigitalWalletCardFound.id,
-          customerData.points
-        );
-        console.log("result", result);
-        console.log("result2", result2);
-      } else {
-        const newDigitalWalletCard = await createCustomerCard(
-          newDigitalWalletCustomer.id,
-          process.env.CARD_TEMPLATE_ID
-        );
-
-        const newPosabitCustomerData: PosabitCustomerProperties = {
-          first_name: customerData.first_name,
-          last_name: customerData.last_name,
-          email: `${newDigitalWalletCard.id}@stickycards.co`,
-        };
-
-        let newPosabitCustomer = (await createPosabitCustomer(
-          newPosabitCustomerData
-        )) as PosabitCustomer;
-
-        if (customerData.points && customerData.points !== 0) {
-          const updatedPosabitCustomer = (await updateCustomerNativeLoyalty(
-            newPosabitCustomer.id
-          )) as PosabitCustomer;
-
-          if (updatedPosabitCustomer.id) {
-            newPosabitCustomer = updatedPosabitCustomer;
-          }
-        }
-        console.log("customerData.points", customerData.points);
-        console.log("newPosabitCustomer", newPosabitCustomer);
-        await addToProgram(newDigitalWalletCard.id, customerData.points);
-      }
-    }
-  } 
+    console.log('has phone number')
+    await handleCustomerLoyaltySync(customerData);
+  }
 };
 
 for (let i = 0; i < customers.length; i++) {
-  if (i === 0) continue;
   try {
     await processCustomer(customers[i].id);
   } catch (e: any) {
