@@ -39,7 +39,8 @@ const processCustomer = async (customerId: number) => {
 
   if (customerData.telephone) {
     console.log('has phone number')
-    await handleCustomerLoyaltySync(customerData);
+    const response = await handleCustomerLoyaltySync(customerData);
+    console.log("response", response);
   }
 };
 

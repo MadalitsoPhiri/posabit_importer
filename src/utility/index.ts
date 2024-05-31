@@ -236,33 +236,33 @@ export const findCardByCustomerId = async (
   }
 };
 
-export const handleCustomerLoyaltySync = async (customerData: PosabitCustomer) => {
-  if (customerData.telephone) {
-    const customerCreationPayload = {
-      phone: normalizePhoneNumber(customerData.telephone),
-      firstName: customerData.first_name,
-      surname: customerData.last_name,
-      dateOfBirth: customerData.birthday,
-      gender: customerData.gender,
-      email: customerData.email,
-    };
+export const handleCustomerLoyaltySync = async (
+  customerData: PosabitCustomer
+) => {
+  const customerCreationPayload = {
+    phone: normalizePhoneNumber(customerData.telephone),
+    firstName: customerData.first_name,
+    surname: customerData.last_name,
+    dateOfBirth: customerData.birthday,
+    gender: customerData.gender,
+    email: customerData.email,
+  };
 
-    const newDigitalWalletCustomer = await createDigitalWalletCustomer(
-      customerCreationPayload
-    );
+  const newDigitalWalletCustomer = await createDigitalWalletCustomer(
+    customerCreationPayload
+  );
 
-    const DigitalWalletCardFound = await findCardByCustomerId(
-      newDigitalWalletCustomer.id
+  const DigitalWalletCardFound = await findCardByCustomerId(
+    newDigitalWalletCustomer.id
+  );
+  if (DigitalWalletCardFound) {
+    await handleDiffSync(customerData, DigitalWalletCardFound);
+  } else {
+    const newDigitalWalletCard = await createCustomerCard(
+      newDigitalWalletCustomer.id,
+      process.env.CARD_TEMPLATE_ID
     );
-    if (DigitalWalletCardFound) {
-      await handleDiffSync(customerData, DigitalWalletCardFound);
-    } else {
-      const newDigitalWalletCard = await createCustomerCard(
-        newDigitalWalletCustomer.id,
-        process.env.CARD_TEMPLATE_ID
-      );
-      await handleDiffSync(customerData, newDigitalWalletCard);
-    }
+    await handleDiffSync(customerData, newDigitalWalletCard);
   }
 };
 const handleDiffSync = async (
@@ -270,19 +270,15 @@ const handleDiffSync = async (
   DigitalWalletCard: Card
 ) => {
   try {
-    console.log(
-      "DigitalWalletCard.balance.bonusBalance",
-      DigitalWalletCard.balance.bonusBalance
-    );
 
-    console.log("customerData.points", customerData.points);
+
     if (customerData.points > DigitalWalletCard.balance.bonusBalance) {
       console.log("adding to program");
       await addToProgram(
         DigitalWalletCard.id,
         customerData.points - DigitalWalletCard.balance.bonusBalance
       );
-    } else if (customerData.points < DigitalWalletCard.balance.balance) {
+    } else if (customerData.points < DigitalWalletCard.balance.bonusBalance) {
       console.log("subtracting from program");
 
       await handleSubtractFromProgram(
