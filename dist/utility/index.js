@@ -2,11 +2,11 @@ import axios from "axios";
 export const getCustomerById = async (customerId) => {
     try {
         const { data } = await axios({
-            method: 'get',
+            method: "get",
             url: `${process.env.POSABIT_BASE_URL}/v2/venue/customers/${customerId}`,
             headers: {
                 Authorization: `Bearer ${process.env.POSABIT_API_TOKEN}`,
-                Accept: 'application/json',
+                Accept: "application/json",
             },
         });
         return data === null || data === void 0 ? void 0 : data.customer;
@@ -16,41 +16,41 @@ export const getCustomerById = async (customerId) => {
     }
 };
 export const extractNumberCharacters = (stringWithNumbers) => {
-    const extractedNumberCharacters = stringWithNumbers.replace(/\D/g, '');
+    const extractedNumberCharacters = stringWithNumbers.replace(/\D/g, "");
     return extractedNumberCharacters;
 };
 export const normalizePhoneNumber = (phoneNumber) => {
     let formattedPhoneNumber = extractNumberCharacters(phoneNumber);
-    const alreadyStartsWithOne = formattedPhoneNumber.charAt(0) === '1';
+    const alreadyStartsWithOne = formattedPhoneNumber.charAt(0) === "1";
     if (!alreadyStartsWithOne) {
-        formattedPhoneNumber = '1' + formattedPhoneNumber;
+        formattedPhoneNumber = "1" + formattedPhoneNumber;
     }
     return formattedPhoneNumber;
 };
 export const createDigitalWalletCustomer = async (payload) => {
     try {
         const { data } = await axios({
-            method: 'post',
+            method: "post",
             url: `${process.env.DIGITAL_WALLET_URL}/customers`,
             headers: {
-                'X-API-Key': process.env.DIGITAL_WALLET_API_KEY,
+                "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
             },
             data: payload,
         });
         return data === null || data === void 0 ? void 0 : data.data;
     }
     catch (error) {
-        console.log('failed to create digitalwallet customer', error);
+        console.log("failed to create digitalwallet customer", error);
         return null;
     }
 };
 export const createCustomerCard = async (customerId, templateId) => {
     try {
         const { data } = await axios({
-            method: 'post',
+            method: "post",
             url: `${process.env.DIGITAL_WALLET_URL}/cards`,
             headers: {
-                'X-API-Key': process.env.DIGITAL_WALLET_API_KEY,
+                "X-API-Key": process.env.DIGITAL_WALLET_API_KEY,
             },
             data: {
                 templateId,
@@ -60,36 +60,36 @@ export const createCustomerCard = async (customerId, templateId) => {
         return data === null || data === void 0 ? void 0 : data.data;
     }
     catch (error) {
-        console.error('failed to create card', error);
+        console.error("failed to create card", error);
         return null;
     }
 };
 export const createPosabitCustomer = async (customer) => {
     try {
         const { data } = await axios({
-            method: 'post',
+            method: "post",
             url: `${process.env.POSABIT_BASE_URL}/v2/venue/customers`,
             headers: {
                 Authorization: `Bearer ${process.env.POSABIT_API_TOKEN}`,
-                Accept: 'application/json',
+                Accept: "application/json",
             },
             data: { customer: customer },
         });
         return data === null || data === void 0 ? void 0 : data.customer;
     }
     catch (error) {
-        console.error('failed to create posabit customer', error);
+        console.error("failed to create posabit customer", error);
         return null;
     }
 };
 export const updateCustomerNativeLoyalty = async (customerId, pointsToUpdate = 0) => {
     try {
         const { data } = await axios({
-            method: 'put',
+            method: "put",
             url: `${process.env.POSABIT_BASE_URL}/v2/venue/customers/${customerId}`,
             headers: {
                 Authorization: `Bearer ${process.env.POSABIT_API_TOKEN}`,
-                Accept: 'application/json',
+                Accept: "application/json",
             },
             data: {
                 customer: {
@@ -100,7 +100,7 @@ export const updateCustomerNativeLoyalty = async (customerId, pointsToUpdate = 0
         return data === null || data === void 0 ? void 0 : data.customer;
     }
     catch (error) {
-        console.error('updateCustomerNativeLoyalty failed', error);
+        console.error("updateCustomerNativeLoyalty failed", error);
     }
 };
 export const addToProgram = async (cardId, amountToAdd) => {
@@ -177,6 +177,43 @@ export const findCardByCustomerId = async (customerId) => {
     }
     catch (error) {
         console.log("error", error);
+    }
+};
+export const handleCustomerLoyaltySync = async (customerData) => {
+    if (customerData.phone) {
+        const customerCreationPayload = {
+            phone: normalizePhoneNumber(customerData.phone),
+            firstName: customerData.FirstName,
+            surname: customerData.LastName,
+            dateOfBirth: customerData.DateOfBirth,
+            email: customerData.email,
+        };
+        const newDigitalWalletCustomer = await createDigitalWalletCustomer(customerCreationPayload);
+        const DigitalWalletCardFound = await findCardByCustomerId(newDigitalWalletCustomer.id);
+        if (DigitalWalletCardFound) {
+            await handleDiffSync(customerData, DigitalWalletCardFound);
+        }
+        else {
+            const newDigitalWalletCard = await createCustomerCard(newDigitalWalletCustomer.id, process.env.CARD_TEMPLATE_ID);
+            await handleDiffSync(customerData, newDigitalWalletCard);
+        }
+    }
+};
+export const handleDiffSync = async (customerData, DigitalWalletCard) => {
+    try {
+        console.log("DigitalWalletCard.balance.bonusBalance", DigitalWalletCard.balance.bonusBalance);
+        console.log("customerData.points", customerData.PointBalance);
+        if (customerData.PointBalance > DigitalWalletCard.balance.bonusBalance) {
+            console.log("adding to program");
+            await addToProgram(DigitalWalletCard.id, customerData.PointBalance - DigitalWalletCard.balance.bonusBalance);
+        }
+        else if (customerData.PointBalance < DigitalWalletCard.balance.balance) {
+            console.log("subtracting from program");
+            await subtractFromProgram(DigitalWalletCard.id, DigitalWalletCard.balance.bonusBalance - customerData.PointBalance);
+        }
+    }
+    catch (e) {
+        console.log("error", e);
     }
 };
 //# sourceMappingURL=index.js.map

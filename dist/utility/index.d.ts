@@ -1,4 +1,5 @@
 import { Card, DigitalWalletCreateCustomerDto, DigitalWalletCustomerObjectDto, PosabitCustomer, PosabitCustomerProperties, changePointsInProgramResponseDto } from "./types.js";
+import { GreenWellnessCustomer } from "index.js";
 export declare const getCustomerById: (customerId: number) => Promise<PosabitCustomer | void>;
 export declare const extractNumberCharacters: (stringWithNumbers: string) => string;
 export declare const normalizePhoneNumber: (phoneNumber: string) => string;
@@ -14,3 +15,5 @@ export declare const subtractFromProgram: (cardId: string, amountToSubtract: num
 }>;
 export declare const findCardListByCustomerId: (customerId: string) => Promise<Card[] | void>;
 export declare const findCardByCustomerId: (customerId: string) => Promise<Card | void>;
+export declare const handleCustomerLoyaltySync: (customerData: GreenWellnessCustomer) => Promise<void>;
+export declare const handleDiffSync: (customerData: GreenWellnessCustomer, DigitalWalletCard: Card) => Promise<void>;
