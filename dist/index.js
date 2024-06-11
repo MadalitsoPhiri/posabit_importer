@@ -14,7 +14,7 @@ const finalObj = obj.map((item) => {
         FirstName: item.FirstName,
         DateOfBirth: item.DateOfBirth,
         UserID: item.UserID,
-        PointBalance: 51,
+        PointBalance: item.PointBalance,
     };
 });
 const processCustomer = async (customer) => {
